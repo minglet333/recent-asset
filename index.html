@@ -228,7 +228,7 @@ function renderTable(assets,prev){
     var group=assets.filter(function(a){return a.owner===owner});
     if(!group.length) return;
     var gt=calcTotal(group), label=OWNER_DISPLAY[owner], bg=OWNER_BG[owner], tc=OWNER_TEXT[owner];
-    html+='<tr class="group-hd" style="background:'+bg+'"><td colspan="6" style="background:'+bg+'"><div class="group-inner"><span class="group-name" style="color:'+tc+'">'+label+'</span><span class="group-subtotal" style="color:'+tc+'">'+fmt(gt)+'만원</span></div></td></tr>';
+    html+='<tr class="group-hd" style="background:'+bg+'"><td colspan="6" style="background:'+bg+'"><div class="group-inner"><span class="group-name" style="color:'+tc+'">'+label+'</span><span class="group-subtotal" style="color:'+tc+'">'+fmtW(gt)+'</span></div></td></tr>';
     group.forEach(function(a){
       var p=prev.find(function(x){return x.id===a.id});
       var d=p!=null?a.amount-p.amount:null;
