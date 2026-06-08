@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=swap" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
-    :root{--color-background-primary:#ffffff;--color-background-secondary:#f5f5f3;--color-background-tertiary:#eeece8;--color-text-primary:#1a1a18;--color-text-secondary:#6b6a65;--color-border-tertiary:rgba(0,0,0,0.10);--color-border-secondary:rgba(0,0,0,0.18);--color-border-info:#185FA5;--color-text-info:#185FA5;--border-radius-md:8px;--border-radius-lg:12px;--font-sans:'Noto Sans KR',sans-serif}
+    :root{--color-background-primary:#1c1c1e;--color-background-secondary:#2c2c2e;--color-background-tertiary:#141414;--color-text-primary:#f5f5f0;--color-text-secondary:#9a9a95;--color-border-tertiary:rgba(255,255,255,0.08);--color-border-secondary:rgba(255,255,255,0.15);--color-border-info:#5b9bd5;--color-text-info:#5b9bd5;--border-radius-md:8px;--border-radius-lg:12px;--font-sans:'Noto Sans KR',sans-serif}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:var(--font-sans);background:var(--color-background-tertiary);color:var(--color-text-primary);min-height:100vh;padding:2rem 1rem}
     .container{max-width:720px;margin:0 auto}
@@ -39,7 +39,7 @@
     .modal-row label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
     .modal-input{width:100%;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:8px 10px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)}
     .modal-input:focus{outline:none;border-color:var(--color-border-info)}
-    .modal-submit{width:100%;margin-top:4px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;border:none;border-radius:var(--border-radius-md);background:var(--color-text-primary);color:var(--color-background-primary);font-family:var(--font-sans)}
+    .modal-submit{width:100%;margin-top:4px;padding:9px;font-size:13px;font-weight:500;cursor:pointer;border:none;border-radius:var(--border-radius-md);background:#f5f5f0;color:#1c1c1e;font-family:var(--font-sans)}
     .modal-submit:hover{opacity:0.85}
     .pie-row{display:flex;gap:2rem;align-items:center}
     .pie-wrap{position:relative;flex:0 0 175px;height:175px}
@@ -61,7 +61,7 @@
     .asset-table td{padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:middle}
     .asset-table tbody tr:last-child td{border-bottom:none}
     .cat-badge{display:inline-block;font-size:11px;padding:2px 6px;border-radius:var(--border-radius-md)}
-    .pos{color:#1D9E75;font-size:12px}.neg{color:#D85A30;font-size:12px}
+    .pos{color:#5dcaa5;font-size:12px}.neg{color:#f0997b;font-size:12px}
     .group-hd td{padding:8px 16px;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap;overflow:visible}
     .group-hd:first-child td{border-top:none}
     .group-inner{display:flex;align-items:baseline;gap:10px}
@@ -132,14 +132,14 @@ var SVG={
   edit:'<svg class="ti-svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
   trash:'<svg class="ti-svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
 };
-var COLORS={'은행':'#378ADD','증권':'#1D9E75','디지털자산':'#EF9F27','연금IRP':'#7F77DD','부동산':'#D4537E'};
-var CAT_BG={'은행':'#E6F1FB','증권':'#E1F5EE','디지털자산':'#FAEEDA','연금IRP':'#EEEDFE','부동산':'#FBEAF0'};
-var CAT_TEXT={'은행':'#0C447C','증권':'#085041','디지털자산':'#633806','연금IRP':'#3C3489','부동산':'#72243E'};
+var COLORS={'은행':'#5b9bd5','증권':'#5dcaa5','디지털자산':'#f0c060','연금IRP':'#afa9ec','부동산':'#ed93b1'};
+var CAT_BG={'은행':'#1a2d42','증권':'#1a3028','디지털자산':'#332b14','연금IRP':'#27244a','부동산':'#3a1f2e'};
+var CAT_TEXT={'은행':'#7ab8f5','증권':'#5dcaa5','디지털자산':'#f0c060','연금IRP':'#afa9ec','부동산':'#ed93b1'};
 var ORDER=['은행','증권','디지털자산','연금IRP','부동산'];
 var OWNER_DISPLAY={'나':'누미','남편':'두미','공동':'공동'};
 var OWNER_ORDER=['나','남편','공동'];
-var OWNER_BG={'나':'#EEEDFE','남편':'#E1F5EE','공동':'#F1EFE8'};
-var OWNER_TEXT={'나':'#3C3489','남편':'#085041','공동':'#444441'};
+var OWNER_BG={'나':'#27244a','남편':'#1a3028','공동':'#2a2a28'};
+var OWNER_TEXT={'나':'#afa9ec','남편':'#5dcaa5','공동':'#b4b2a9'};
 
 var cy=new Date().getFullYear(), cm=new Date().getMonth();
 var lastUpdated=null;
@@ -311,13 +311,13 @@ function renderLiquidity(assets,total){
   var g=document.getElementById('liquidity-grid');
   if(!g) return;
   g.innerHTML=
-    '<div class="mc" style="border-left:3px solid #1D9E75">'
-    +'<div class="lbl" style="color:#085041">고환금성</div>'
+    '<div class="mc" style="border-left:3px solid #5dcaa5">'
+    +'<div class="lbl" style="color:#5dcaa5">고환금성</div>'
     +'<div class="val">'+fmtEok(high)+'</div>'
     +'<div class="pct">'+(total?Math.round(high/total*100):0)+'%</div>'
     +'</div>'
-    +'<div class="mc" style="border-left:3px solid #7F77DD">'
-    +'<div class="lbl" style="color:#3C3489">저환금성</div>'
+    +'<div class="mc" style="border-left:3px solid #afa9ec">'
+    +'<div class="lbl" style="color:#afa9ec">저환금성</div>'
     +'<div class="val">'+fmtEok(low)+'</div>'
     +'<div class="pct">'+(total?Math.round(low/total*100):0)+'%</div>'
     +'</div>';
@@ -338,10 +338,31 @@ function renderTrend(){
   var pctData=sorted.map(function(e,i){if(i===0) return null;var p=sorted[i-1].total;return p?parseFloat(((e.total-p)/p*100).toFixed(1)):null;});
   var ctx=document.getElementById('trendChart').getContext('2d');
   if(trendInst) trendInst.destroy();
-  trendInst=new Chart(ctx,{type:'line',data:{labels:sorted.map(function(e){return e.label}),datasets:[{label:'총자산',data:sorted.map(function(e){return e.total}),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.08)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#378ADD'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+fmtW(c.raw)},afterLabel:function(c){var p=pctData[c.dataIndex];return p!=null?'전월 대비 '+(p>=0?'+':'')+p+'%':''}}}},scales:{y:{ticks:{callback:function(v){return fmtW(v)}},grid:{color:'rgba(128,128,128,0.1)'}},x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}}}});
+  trendInst=new Chart(ctx,{type:'line',data:{labels:sorted.map(function(e){return e.label}),datasets:[{label:'총자산',data:sorted.map(function(e){return e.total}),borderColor:'#5b9bd5',backgroundColor:'rgba(91,155,213,0.12)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#5b9bd5'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+fmtW(c.raw)},afterLabel:function(c){var p=pctData[c.dataIndex];return p!=null?'전월 대비 '+(p>=0?'+':'')+p+'%':''}}}},scales:{y:{ticks:{callback:function(v){return fmtW(v)}},grid:{color:'rgba(255,255,255,0.08)'}},x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}}}});
 }
 
 document.getElementById('month-label').textContent=cy+'년 '+(cm+1)+'월';
+
+// 더미데이터로 즉시 렌더 (Firebase 로드 전 미리보기용)
+(function(){
+  var key=cy+'-'+String(cm+1).padStart(2,'0');
+  var pv=prevYM(cy,cm); var pkey=pv[0]+'-'+String(pv[1]+1).padStart(2,'0');
+  monthlyData[key]=[
+    {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:15000000},
+    {id:2,cat:'증권',name:'삼성전자 주식',owner:'남편',amount:8000000},
+    {id:3,cat:'디지털자산',name:'비트코인',owner:'공동',amount:5000000},
+    {id:4,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:20000000},
+    {id:5,cat:'부동산',name:'아파트 분양권',owner:'공동',amount:80000000}
+  ];
+  monthlyData[pkey]=[
+    {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:14000000},
+    {id:2,cat:'증권',name:'삼성전자 주식',owner:'남편',amount:7500000},
+    {id:3,cat:'디지털자산',name:'비트코인',owner:'공동',amount:4200000},
+    {id:4,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:19500000},
+    {id:5,cat:'부동산',name:'아파트 분양권',owner:'공동',amount:80000000}
+  ];
+  renderMonth();
+})();
 
 // Firebase — dynamic import so regular <script> works without type=module
 (function(){
