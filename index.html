@@ -230,6 +230,7 @@ function renderTable(assets,prev){
   OWNER_ORDER.forEach(function(owner){
     var group=assets.filter(function(a){return a.owner===owner});
     if(!group.length) return;
+    group.sort(function(a,b){return ORDER.indexOf(a.cat)-ORDER.indexOf(b.cat);});
     var gt=calcTotal(group), label=OWNER_DISPLAY[owner], bg=OWNER_BG[owner], tc=OWNER_TEXT[owner];
     html+='<tr class="group-hd" style="background:'+bg+'"><td colspan="6" style="background:'+bg+'"><div class="group-inner"><span class="group-name" style="color:'+tc+'">'+label+'</span><span class="group-subtotal" style="color:'+tc+'">'+fmtW(gt)+'</span></div></td></tr>';
     group.forEach(function(a){
