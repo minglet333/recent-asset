@@ -81,6 +81,7 @@
     <div>
       <h1><span>🏠</span>우리 자산현황판</h1>
       <div class="sub" id="total-sub"></div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;opacity:0.75">순자산의 0.01% (편하게 쓸 수 있는 금액의 상한선) <span id="rule-001" style="color:var(--color-text-secondary)"></span></div>
     </div>
     <div class="month-nav">
       <button onclick="changeMonth(-1)"><svg class="ti-svg" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -98,6 +99,7 @@
       <div class="legend" id="legend"></div>
     </div>
   </div>
+
   <div class="card">
     <div class="card-hd">
       <h2>월별 총자산 추이 <span style="font-size:12px;font-weight:400;color:var(--color-text-secondary)">— 기록된 달만 표시</span></h2>
@@ -222,6 +224,8 @@ function renderMonth(){
   renderPie(cats,total);
   renderTrend();
   renderLiquidity(assets,total);
+  var ruleEl=document.getElementById('rule-001');
+  if(ruleEl) ruleEl.textContent=fmtW(Math.floor(total*0.0001));
 }
 
 function renderTable(assets,prev){
