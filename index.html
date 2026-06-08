@@ -88,6 +88,8 @@
       <button onclick="changeMonth(1)"><svg class="ti-svg" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
   </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem" id="liquidity-grid"></div>
   <div class="summary-grid" id="summary-grid"></div>
   <div class="card">
     <div class="card-hd"><h2>자산 구성 비율</h2></div>
@@ -106,14 +108,17 @@
     <div id="trend-empty" class="empty-msg" style="display:none">기록된 달이 2개 이상이면 그래프가 표시돼요</div>
   </div>
   <div class="asset-card">
-    <div class="asset-card-top">
-      <h2>자산 내역</h2>
+    <div class="asset-card-top" style="flex-wrap:wrap;gap:6px">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <h2>자산 내역</h2>
+        <span id="last-updated" style="font-size:11px;color:var(--color-text-secondary)"></span>
+      </div>
       <button class="add-btn" onclick="toggleAdd()"><svg class="ti-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 추가</button>
     </div>
     <table class="asset-table">
       <thead><tr>
-        <th>분류</th><th>항목명</th><th class="r">금액 (만원)</th>
-        <th class="r">전월 대비</th><th></th><th></th>
+        <th>분류</th><th>항목명</th><th class="r">금액</th>
+        <th class="r">전월 대비</th><th colspan="2"></th>
       </tr></thead>
       <tbody id="asset-tbody"></tbody>
     </table>
@@ -137,6 +142,7 @@ var OWNER_BG={'나':'#EEEDFE','남편':'#E1F5EE','공동':'#F1EFE8'};
 var OWNER_TEXT={'나':'#3C3489','남편':'#085041','공동':'#444441'};
 
 var cy=new Date().getFullYear(), cm=new Date().getMonth();
+var lastUpdated=null;
 var monthlyData={}, nextId=200, editingId=null, showAdd=false;
 var dbSet=null;
 
@@ -146,20 +152,44 @@ function getAssets(y,m){return monthlyData[mkey(y,m)]||[]}
 function calcTotal(a){return a.reduce(function(s,x){return s+x.amount},0)}
 function calcCats(a){var c={};a.forEach(function(x){c[x.cat]=(c[x.cat]||0)+x.amount});return c}
 function fmt(n){return Number(n||0).toLocaleString()}
+function fmtW(n){return Number(n||0).toLocaleString()+'원'}
 function shortYear(y){return String(y).slice(-2)}
-function saveToStorage(){if(dbSet) dbSet(monthlyData)}
+function saveToStorage(){
+  lastUpdated=new Date();
+  updateTimestamp();
+  if(dbSet) dbSet(monthlyData);
+}
+function updateTimestamp(){
+  var el=document.getElementById('last-updated');
+  if(!el) return;
+  if(!lastUpdated){el.textContent='';return;}
+  var d=lastUpdated;
+  var pad=function(n){return String(n).padStart(2,'0')};
+  el.textContent='최근 업데이트 '+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
 
 function initDefaultData(){
   var key=mkey(cy,cm);
+  var pv=prevYM(cy,cm); var pkey=mkey(pv[0],pv[1]);
   monthlyData[key]=[
-    {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:1500},
-    {id:2,cat:'은행',name:'신한은행 예금',owner:'남편',amount:3000},
-    {id:3,cat:'증권',name:'삼성전자 주식',owner:'나',amount:800},
-    {id:4,cat:'증권',name:'미국ETF',owner:'남편',amount:1200},
-    {id:5,cat:'디지털자산',name:'비트코인',owner:'공동',amount:500},
-    {id:6,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:2000},
-    {id:7,cat:'연금IRP',name:'IRP계좌',owner:'남편',amount:1800},
-    {id:8,cat:'부동산분양권',name:'아파트 분양권',owner:'공동',amount:8000}
+    {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:15000000},
+    {id:2,cat:'은행',name:'신한은행 예금',owner:'남편',amount:30000000},
+    {id:3,cat:'증권',name:'삼성전자 주식',owner:'나',amount:8000000},
+    {id:4,cat:'증권',name:'미국ETF',owner:'남편',amount:12000000},
+    {id:5,cat:'디지털자산',name:'비트코인',owner:'공동',amount:5000000},
+    {id:6,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:20000000},
+    {id:7,cat:'연금IRP',name:'IRP계좌',owner:'남편',amount:18000000},
+    {id:8,cat:'부동산분양권',name:'아파트 분양권',owner:'공동',amount:80000000}
+  ];
+  monthlyData[pkey]=[
+    {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:14500000},
+    {id:2,cat:'은행',name:'신한은행 예금',owner:'남편',amount:29000000},
+    {id:3,cat:'증권',name:'삼성전자 주식',owner:'나',amount:7600000},
+    {id:4,cat:'증권',name:'미국ETF',owner:'남편',amount:11500000},
+    {id:5,cat:'디지털자산',name:'비트코인',owner:'공동',amount:4200000},
+    {id:6,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:19500000},
+    {id:7,cat:'연금IRP',name:'IRP계좌',owner:'남편',amount:17500000},
+    {id:8,cat:'부동산분양권',name:'아파트 분양권',owner:'공동',amount:80000000}
   ];
   saveToStorage();
 }
@@ -170,14 +200,15 @@ function renderMonth(){
   var total=calcTotal(assets), prevTotal=calcTotal(prev);
   var diff=total-prevTotal;
   var pct=prevTotal?((diff/prevTotal)*100).toFixed(1):'0.0';
-  document.getElementById('total-sub').textContent='총 '+fmt(total)+'만원 · 전월 대비 '+(diff>=0?'+':'')+fmt(diff)+'만원 ('+(diff>=0?'+':'')+pct+'%)';
+  document.getElementById('total-sub').textContent='총 '+fmtW(total)+' · 전월 대비 '+(diff>=0?'+':'')+fmtW(diff)+' ('+(diff>=0?'+':'')+pct+'%)';
   var cats=calcCats(assets);
   document.getElementById('summary-grid').innerHTML=ORDER.map(function(c){
-    return '<div class="mc"><div class="lbl" style="color:'+CAT_TEXT[c]+'">'+c+'</div><div class="val">'+fmt(cats[c]||0)+'만원</div><div class="pct">'+(total?Math.round((cats[c]||0)/total*100):0)+'%</div></div>';
+    return '<div class="mc"><div class="lbl" style="color:'+CAT_TEXT[c]+'">'+c+'</div><div class="val">'+fmtW(cats[c]||0)+'</div><div class="pct">'+(total?Math.round((cats[c]||0)/total*100):0)+'%</div></div>';
   }).join('');
   renderTable(assets,prev);
   renderPie(cats,total);
   renderTrend();
+  renderLiquidity(assets,total);
 }
 
 function renderTable(assets,prev){
@@ -202,17 +233,15 @@ function renderTable(assets,prev){
           +'<option value="남편"'+(a.owner==='남편'?' selected':'')+'>두미</option>'
           +'<option value="공동"'+(a.owner==='공동'?' selected':'')+'>공동</option>'
           +'</select></td>'
-          +'<td class="c"><button class="icon-btn ok" onclick="saveEdit('+a.id+')">'+SVG.check+'</button></td>'
-          +'<td class="c"><button class="icon-btn" onclick="cancelEdit()">'+SVG.x+'</button></td>'
+          +'<td class="c" colspan="2" style="white-space:nowrap"><button class="icon-btn ok" onclick="saveEdit('+a.id+')">'+SVG.check+'</button><button class="icon-btn" onclick="cancelEdit()">'+SVG.x+'</button></td>'
           +'</tr>';
       } else {
         html+='<tr id="row-'+a.id+'">'
           +'<td><span class="cat-badge" style="background:'+CAT_BG[a.cat]+';color:'+CAT_TEXT[a.cat]+'">'+a.cat+'</span></td>'
           +'<td>'+a.name+'</td>'
-          +'<td class="r" style="font-weight:500">'+fmt(a.amount)+'</td>'
-          +'<td class="r"><span class="'+cls+'">'+(d!==null&&d!==0?sign+fmt(Math.abs(d)):'—')+'</span></td>'
-          +'<td class="c"><button class="icon-btn" onclick="startEdit('+a.id+')">'+SVG.edit+'</button></td>'
-          +'<td class="c"><button class="icon-btn" onclick="deleteAsset('+a.id+')">'+SVG.trash+'</button></td>'
+          +'<td class="r" style="font-weight:500">'+fmtW(a.amount)+'</td>'
+          +'<td class="r"><span class="'+cls+'">'+(d!==null&&d!==0?sign+fmtW(Math.abs(d)):'—')+'</span></td>'
+          +'<td class="c" colspan="2" style="white-space:nowrap"><button class="icon-btn" onclick="startEdit('+a.id+')">'+SVG.edit+'</button><button class="icon-btn" onclick="deleteAsset('+a.id+')">'+SVG.trash+'</button></td>'
           +'</tr>';
       }
     });
@@ -264,13 +293,32 @@ function changeMonth(dir){
   editingId=null;showAdd=false;renderMonth();
 }
 
+
+function renderLiquidity(assets,total){
+  var LOW_CATS={'연금IRP':true,'부동산분양권':true};
+  var high=0,low=0;
+  assets.forEach(function(a){if(LOW_CATS[a.cat]) low+=a.amount; else high+=a.amount;});
+  var g=document.getElementById('liquidity-grid');
+  if(!g) return;
+  g.innerHTML=
+    '<div class="mc" style="border-left:3px solid #1D9E75">'
+    +'<div class="lbl" style="color:#085041">고환금성</div>'
+    +'<div class="val">'+fmtW(high)+'</div>'
+    +'<div class="pct">'+(total?Math.round(high/total*100):0)+'%</div>'
+    +'</div>'
+    +'<div class="mc" style="border-left:3px solid #7F77DD">'
+    +'<div class="lbl" style="color:#3C3489">저환금성</div>'
+    +'<div class="val">'+fmtW(low)+'</div>'
+    +'<div class="pct">'+(total?Math.round(low/total*100):0)+'%</div>'
+    +'</div>';
+}
 var pieInst=null,trendInst=null;
 function renderPie(cats,total){
   var data=ORDER.map(function(c){return cats[c]||0});
   var ctx=document.getElementById('pieChart').getContext('2d');
   if(pieInst) pieInst.destroy();
   pieInst=new Chart(ctx,{type:'doughnut',data:{labels:ORDER,datasets:[{data:data,backgroundColor:ORDER.map(function(c){return COLORS[c]}),borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw)+'만원 ('+(total?Math.round(c.raw/total*100):0)+'%)'}}}}}});
-  document.getElementById('legend').innerHTML=ORDER.map(function(c,i){return '<div class="legend-item"><span><span class="legend-dot" style="background:'+COLORS[c]+'"></span>'+c+'</span><span style="font-weight:500;color:var(--color-text-primary)">'+(total?Math.round((data[i]||0)/total*100):0)+'% <span style="font-weight:400;color:var(--color-text-secondary)">'+fmt(data[i])+'만</span></span></div>'}).join('');
+  document.getElementById('legend').innerHTML=ORDER.map(function(c,i){return '<div class="legend-item"><span><span class="legend-dot" style="background:'+COLORS[c]+'"></span>'+c+'</span><span style="font-weight:500;color:var(--color-text-primary)">'+(total?Math.round((data[i]||0)/total*100):0)+'% <span style="font-weight:400;color:var(--color-text-secondary)">'+fmt(data[i])+'</span></span></div>'}).join('');
 }
 function renderTrend(){
   var sorted=Object.entries(monthlyData).filter(function(e){return e[1]&&e[1].length>0}).map(function(e){var p=e[0].split('-').map(Number);return{key:e[0],label:shortYear(p[0])+'년 '+p[1]+'월',total:calcTotal(e[1])};}).sort(function(a,b){return a.key.localeCompare(b.key)});
@@ -280,7 +328,7 @@ function renderTrend(){
   var pctData=sorted.map(function(e,i){if(i===0) return null;var p=sorted[i-1].total;return p?parseFloat(((e.total-p)/p*100).toFixed(1)):null;});
   var ctx=document.getElementById('trendChart').getContext('2d');
   if(trendInst) trendInst.destroy();
-  trendInst=new Chart(ctx,{type:'line',data:{labels:sorted.map(function(e){return e.label}),datasets:[{label:'총자산',data:sorted.map(function(e){return e.total}),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.08)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#378ADD'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+fmt(c.raw)+'만원'},afterLabel:function(c){var p=pctData[c.dataIndex];return p!=null?'전월 대비 '+(p>=0?'+':'')+p+'%':''}}}},scales:{y:{ticks:{callback:function(v){return fmt(v)+'만'}},grid:{color:'rgba(128,128,128,0.1)'}},x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}}}});
+  trendInst=new Chart(ctx,{type:'line',data:{labels:sorted.map(function(e){return e.label}),datasets:[{label:'총자산',data:sorted.map(function(e){return e.total}),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.08)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#378ADD'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+fmtW(c.raw)},afterLabel:function(c){var p=pctData[c.dataIndex];return p!=null?'전월 대비 '+(p>=0?'+':'')+p+'%':''}}}},scales:{y:{ticks:{callback:function(v){return fmtW(v)}},grid:{color:'rgba(128,128,128,0.1)'}},x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}}}});
 }
 
 document.getElementById('month-label').textContent=cy+'년 '+(cm+1)+'월';
@@ -332,8 +380,8 @@ document.getElementById('month-label').textContent=cy+'년 '+(cm+1)+'월';
       </select>
     </div>
     <div class="modal-row">
-      <label>금액 (만원)</label>
-      <input id="m-amt" type="number" class="modal-input" placeholder="예: 1500" />
+      <label>금액 (원 단위 입력)</label>
+      <input id="m-amt" type="number" class="modal-input" placeholder="예: 15000000" />
     </div>
     <button class="modal-submit" onclick="confirmModal()">추가하기</button>
   </div>
