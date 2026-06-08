@@ -152,6 +152,15 @@ function getAssets(y,m){return monthlyData[mkey(y,m)]||[]}
 function calcTotal(a){return a.reduce(function(s,x){return s+x.amount},0)}
 function calcCats(a){var c={};a.forEach(function(x){c[x.cat]=(c[x.cat]||0)+x.amount});return c}
 function fmt(n){return Number(n||0).toLocaleString()}
+function formatAmtInput(el){
+  var raw=el.value.replace(/[^0-9]/g,'');
+  var num=parseInt(raw)||0;
+  el.value=num?num.toLocaleString():'';
+  el.dataset.raw=raw;
+}
+function getAmtValue(el){
+  return parseInt((el.dataset.raw||el.value.replace(/[^0-9]/g,''))||'0')||0;
+}
 function fmtW(n){return Number(n||0).toLocaleString()+'원'}
 function fmtEok(n){return (Math.round((n||0)/1000000)/100).toFixed(2)+'억원'}
 function shortYear(y){return String(y).slice(-2)}
@@ -228,7 +237,7 @@ function renderTable(assets,prev){
         html+='<tr id="row-'+a.id+'">'
           +'<td><select class="edit-select" id="e-cat-'+a.id+'">'+ORDER.map(function(c){return '<option'+(c===a.cat?' selected':'')+'>'+c+'</option>'}).join('')+'</select></td>'
           +'<td><input class="edit-input" id="e-name-'+a.id+'" value="'+a.name+'" /></td>'
-          +'<td class="r"><input class="edit-input" id="e-amt-'+a.id+'" type="number" value="'+a.amount+'" style="text-align:right" /></td>'
+          +'<td class="r"><input class="edit-input" id="e-amt-'+a.id+'" type="text" value="'+Number(a.amount).toLocaleString()+'" style="text-align:right" oninput="formatAmtInput(this)" /></td>'
           +'<td class="r"><select class="edit-select" id="e-owner-'+a.id+'" style="font-size:11px">'
           +'<option value="나"'+(a.owner==='나'?' selected':'')+'>누미</option>'
           +'<option value="남편"'+(a.owner==='남편'?' selected':'')+'>두미</option>'
@@ -260,7 +269,7 @@ function confirmModal(){
   var cat=document.getElementById('m-cat').value;
   var name=document.getElementById('m-name').value.trim();
   var owner=document.getElementById('m-owner').value;
-  var amount=parseInt(document.getElementById('m-amt').value)||0;
+  var amount=getAmtValue(document.getElementById('m-amt'));
   if(!cat||!name||!amount){alert('분류, 항목명, 금액을 입력해주세요.');return;}
   var key=mkey(cy,cm);
   if(!monthlyData[key]) monthlyData[key]=[];
@@ -279,7 +288,7 @@ function saveEdit(id){
   var owner=document.getElementById('e-owner-'+id);
   if(cat) a.cat=cat.value;
   if(name&&name.value.trim()) a.name=name.value.trim();
-  if(amt) a.amount=parseInt(amt.value)||a.amount;
+  if(amt) a.amount=getAmtValue(amt)||a.amount;
   if(owner) a.owner=owner.value;
   editingId=null;saveToStorage();renderMonth();
 }
@@ -346,12 +355,14 @@ document.getElementById('month-label').textContent=cy+'년 '+(cm+1)+'월';
     +'window.dbSet=function(data){set(dataRef,data)};'
     +'onValue(dataRef,function(snapshot){'
     +'  var val=snapshot.val();'
-    +'  if(val){window.monthlyData=val;var ids=Object.values(val).flat().map(function(a){return a.id}).filter(Number.isFinite);if(ids.length) window.nextId=Math.max.apply(null,ids)+1;}'
+    +'  if(val){window.monthlyData=val;var ids=Object.values(val).flat().map(function(a){return a.id}).filter(Number.isFinite);if(ids.length) window.nextId=Math.max.apply(null,ids)+1;window.lastUpdated=new Date();window.updateTimestamp();}'
     +'  else{window.initDefaultData();}'
     +'  window.renderMonth();'
     +'});';
-  document.head.appendChild(s);
-  window.saveToStorage=function(){if(window.dbSet) window.dbSet(window.monthlyData)};
+  window.updateTimestamp=updateTimestamp;
+window.lastUpdated=lastUpdated;
+document.head.appendChild(s);
+  window.saveToStorage=function(){window.lastUpdated=new Date();window.updateTimestamp();if(window.dbSet) window.dbSet(window.monthlyData);};
 })();
 </script>
 
@@ -382,7 +393,7 @@ document.getElementById('month-label').textContent=cy+'년 '+(cm+1)+'월';
     </div>
     <div class="modal-row">
       <label>금액 (원 단위 입력)</label>
-      <input id="m-amt" type="number" class="modal-input" placeholder="예: 15000000" />
+      <input id="m-amt" type="text" class="modal-input" placeholder="예: 15,000,000" oninput="formatAmtInput(this)" />
     </div>
     <button class="modal-submit" onclick="confirmModal()">추가하기</button>
   </div>
