@@ -143,7 +143,23 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvRzeCvs1DpmHWkgo-NQulISYHbQveZy8",
+  authDomain: "numi-dumi-asset.firebaseapp.com",
+  databaseURL: "https://numi-dumi-asset-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "numi-dumi-asset",
+  storageBucket: "numi-dumi-asset.firebasestorage.app",
+  messagingSenderId: "112916556502",
+  appId: "1:112916556502:web:ca05f3695a49a33a38b777"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const DATA_REF = ref(db, 'monthlyData');
 const SVG={
   check:`<svg class="ti-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
   x:`<svg class="ti-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
@@ -169,8 +185,8 @@ function calcTotal(a){return a.reduce((s,x)=>s+x.amount,0)}
 function calcCats(a){const c={};a.forEach(x=>{c[x.cat]=(c[x.cat]||0)+x.amount});return c}
 function fmt(n){return Number(n||0).toLocaleString()}
 function shortYear(y){return String(y).slice(-2)}
-function saveToStorage(){try{localStorage.setItem('asset-data',JSON.stringify(monthlyData));}catch(e){}}
-function loadFromStorage(){try{const d=localStorage.getItem('asset-data');if(d) monthlyData=JSON.parse(d);}catch(e){}}
+function saveToStorage(){set(DATA_REF, monthlyData);}
+function loadFromStorage(){}
 
 function initData(){
   loadFromStorage();
@@ -345,9 +361,19 @@ function changeMonth(dir){
   document.getElementById('month-label').textContent=`${cy}년 ${cm+1}월`;
   editingId=null;showAdd=false;renderMonth();
 }
-initData();
 document.getElementById('month-label').textContent=`${cy}년 ${cm+1}월`;
-renderMonth();
+
+onValue(DATA_REF, (snapshot) => {
+  const val = snapshot.val();
+  if (val) {
+    monthlyData = val;
+    const allIds = Object.values(val).flat().map(a=>a.id).filter(Number.isFinite);
+    if (allIds.length) nextId = Math.max(...allIds) + 1;
+  } else {
+    initData();
+  }
+  renderMonth();
+});
 </script>
 </body>
 </html>
