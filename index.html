@@ -113,7 +113,10 @@
         <h2>자산 내역</h2>
         <span id="last-updated" style="font-size:11px;color:var(--color-text-secondary)"></span>
       </div>
+      <div style="display:flex;gap:8px;align-items:center">
+      <button class="add-btn" onclick="downloadCSV()"><svg class="ti-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV</button>
       <button class="add-btn" onclick="toggleAdd()"><svg class="ti-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 추가</button>
+    </div>
     </div>
     <table class="asset-table">
       <thead><tr>
@@ -296,6 +299,28 @@ function deleteAsset(id){
   var key=mkey(cy,cm);
   monthlyData[key]=monthlyData[key].filter(function(a){return a.id!==id});
   saveToStorage();renderMonth();
+}
+function downloadCSV(){
+  var assets=getAssets(cy,cm);
+  if(!assets.length){alert('이 달의 자산 내역이 없어요.');return;}
+  var rows=[['분류','항목명','소유자','금액(원)']];
+  assets.forEach(function(a){
+    rows.push([a.cat, a.name, OWNER_DISPLAY[a.owner]||a.owner, a.amount]);
+  });
+  var csv=rows.map(function(r){
+    return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(',');
+  }).join('\n');
+  var bom='\uFEFF';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var pad=function(n){return String(n).padStart(2,'0')};
+  a.href=url;
+  a.download='자산내역_'+cy+'년_'+pad(cm+1)+'월.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 function changeMonth(dir){
   cm+=dir;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}
