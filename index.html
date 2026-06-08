@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>우리 자산현황판</title>
+  <style>
+    .ti-svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-3px; }
+  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=swap" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    :root {
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f5f5f3;
+      --color-background-tertiary: #eeece8;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #6b6a65;
+      --color-border-tertiary: rgba(0,0,0,0.10);
+      --color-border-secondary: rgba(0,0,0,0.18);
+      --color-border-primary: rgba(0,0,0,0.28);
+      --color-border-info: #185FA5;
+      --color-text-info: #185FA5;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --font-sans: 'Noto Sans KR', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-background-tertiary);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .top-bar h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+    .sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+    .month-nav { display: flex; align-items: center; gap: 8px; }
+    .month-nav button { background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--color-text-primary); font-family: var(--font-sans); }
+    .month-nav button:hover { background: var(--color-background-secondary); }
+    .month-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); min-width: 80px; text-align: center; }
+    .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+    .mc { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: .85rem 1rem; }
+    .mc .lbl { font-size: 11px; margin-bottom: 5px; }
+    .mc .val { font-size: 14px; font-weight: 500; color: var(--color-text-primary); line-height: 1.3; }
+    .mc .pct { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+    .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+    .card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .card-hd h2 { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+    .add-btn { background: none; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 3px 7px; font-size: 12px; cursor: pointer; color: var(--color-text-secondary); font-family: var(--font-sans); }
+    .add-btn:hover { background: var(--color-background-secondary); }
+    .pie-row { display: flex; gap: 2rem; align-items: center; }
+    .pie-wrap { position: relative; flex: 0 0 175px; height: 175px; }
+    .legend { display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+    .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--color-text-secondary); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .empty-msg { font-size: 13px; color: var(--color-text-secondary); text-align: center; padding: 1.5rem 0; }
+    .asset-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-bottom: 0; }
+    .asset-card-top { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.25rem 1rem; }
+    .asset-card-top h2 { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+    .asset-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .asset-table thead tr { background: var(--color-background-secondary); }
+    .asset-table th { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); padding: 9px 0; white-space: nowrap; border-top: 0.5px solid var(--color-border-tertiary); border-bottom: 0.5px solid var(--color-border-secondary); }
+    .asset-table th.r, .asset-table td.r { text-align: right; }
+    .asset-table th.c, .asset-table td.c { text-align: center; }
+    .asset-table th:first-child, .asset-table td:first-child { padding-left: 16px; }
+    .asset-table th:not(:last-child), .asset-table td:not(:last-child) { padding-right: 8px; }
+    .asset-table th:last-child, .asset-table td:last-child { padding-right: 20px; }
+    .asset-table td { padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+    .asset-table tbody tr:last-child td { border-bottom: none; }
+    .cat-badge { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: var(--border-radius-md); }
+    .cell-name { display: block; }
+    .pos { color: #1D9E75; font-size: 12px; }
+    .neg { color: #D85A30; font-size: 12px; }
+    .group-hd td { padding: 8px 16px; border-top: 0.5px solid var(--color-border-tertiary); border-bottom: 0.5px solid var(--color-border-tertiary); white-space: nowrap; overflow: visible; }
+    .group-hd:first-child td { border-top: none; }
+    .group-inner { display: flex; align-items: baseline; gap: 10px; }
+    .group-name { font-size: 13px; font-weight: 500; }
+    .group-subtotal { font-size: 12px; opacity: 0.75; }
+    .icon-btn { background: none; border: none; outline: none; padding: 4px 5px; font-size: 14px; cursor: pointer; color: var(--color-text-secondary); border-radius: var(--border-radius-md); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-sans); }
+    .icon-btn:hover { background: var(--color-background-secondary); }
+    .icon-btn.ok { color: var(--color-text-info); }
+    .edit-input { font-size: 12px; border: 0.5px solid var(--color-border-info); border-radius: var(--border-radius-md); padding: 3px 6px; background: var(--color-background-primary); color: var(--color-text-primary); width: 100%; font-family: var(--font-sans); }
+    .edit-select { font-size: 12px; border: 0.5px solid var(--color-border-info); border-radius: var(--border-radius-md); padding: 3px 4px; background: var(--color-background-primary); color: var(--color-text-primary); width: 100%; font-family: var(--font-sans); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2 class="sr-only">부부 공동 자산현황판</h2>
+  <div class="top-bar">
+    <div>
+      <h1><span>🏠</span>우리 자산현황판</h1>
+      <div class="sub" id="total-sub"></div>
+    </div>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)"><svg class="ti-svg" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="month-label" id="month-label"></span>
+      <button onclick="changeMonth(1)"><svg class="ti-svg" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="summary-grid" id="summary-grid"></div>
+
+  <div class="card">
+    <div class="card-hd"><h2>자산 구성 비율</h2></div>
+    <div class="pie-row">
+      <div class="pie-wrap"><canvas id="pieChart" role="img" aria-label="자산 분류별 비율 도넛 차트"></canvas></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <h2>월별 총자산 추이 <span style="font-size:12px;font-weight:400;color:var(--color-text-secondary)">— 기록된 달만 표시</span></h2>
+    </div>
+    <div id="trend-wrap" style="position:relative;width:100%;height:200px">
+      <canvas id="trendChart" role="img" aria-label="월별 총자산 변동 추이 라인 차트"></canvas>
+    </div>
+    <div id="trend-empty" class="empty-msg" style="display:none">기록된 달이 2개 이상이면 그래프가 표시돼요</div>
+  </div>
+
+  <div class="asset-card">
+    <div class="asset-card-top">
+      <h2>자산 내역</h2>
+      <button class="add-btn" onclick="toggleAdd()"><svg class="ti-svg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 추가</button>
+    </div>
+    <table class="asset-table">
+      <thead>
+        <tr>
+          <th>분류</th>
+          <th>항목명</th>
+          <th class="r">금액 (만원)</th>
+          <th class="r">전월 대비</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="asset-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const SVG={
+  check:`<svg class="ti-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  x:`<svg class="ti-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  edit:`<svg class="ti-svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash:`<svg class="ti-svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+};
+const COLORS={'은행':'#378ADD','증권':'#1D9E75','디지털자산':'#EF9F27','연금IRP':'#7F77DD','부동산분양권':'#D4537E'};
+const CAT_BG={'은행':'#E6F1FB','증권':'#E1F5EE','디지털자산':'#FAEEDA','연금IRP':'#EEEDFE','부동산분양권':'#FBEAF0'};
+const CAT_TEXT={'은행':'#0C447C','증권':'#085041','디지털자산':'#633806','연금IRP':'#3C3489','부동산분양권':'#72243E'};
+const ORDER=['은행','증권','디지털자산','연금IRP','부동산분양권'];
+const OWNER_DISPLAY={'나':'누미','남편':'두미','공동':'공동'};
+const OWNER_ORDER=['나','남편','공동'];
+const OWNER_BG={'나':'#EEEDFE','남편':'#E1F5EE','공동':'#F1EFE8'};
+const OWNER_TEXT={'나':'#3C3489','남편':'#085041','공동':'#444441'};
+
+let cy=new Date().getFullYear(), cm=new Date().getMonth();
+let monthlyData={}, nextId=200, editingId=null, showAdd=false;
+
+function mkey(y,m){return `${y}-${String(m+1).padStart(2,'0')}`}
+function prevYM(y,m){let pm=m-1,py=y;if(pm<0){pm=11;py--;}return[py,pm]}
+function getAssets(y,m){return monthlyData[mkey(y,m)]||[]}
+function calcTotal(a){return a.reduce((s,x)=>s+x.amount,0)}
+function calcCats(a){const c={};a.forEach(x=>{c[x.cat]=(c[x.cat]||0)+x.amount});return c}
+function fmt(n){return Number(n||0).toLocaleString()}
+function shortYear(y){return String(y).slice(-2)}
+function saveToStorage(){try{localStorage.setItem('asset-data',JSON.stringify(monthlyData));}catch(e){}}
+function loadFromStorage(){try{const d=localStorage.getItem('asset-data');if(d) monthlyData=JSON.parse(d);}catch(e){}}
+
+function initData(){
+  loadFromStorage();
+  const key=mkey(cy,cm);
+  if(!monthlyData[key]){
+    monthlyData[key]=[
+      {id:1,cat:'은행',name:'국민은행 적금',owner:'나',amount:1500},
+      {id:2,cat:'은행',name:'신한은행 예금',owner:'남편',amount:3000},
+      {id:3,cat:'증권',name:'삼성전자 주식',owner:'나',amount:800},
+      {id:4,cat:'증권',name:'미국ETF',owner:'남편',amount:1200},
+      {id:5,cat:'디지털자산',name:'비트코인',owner:'공동',amount:500},
+      {id:6,cat:'연금IRP',name:'IRP계좌',owner:'나',amount:2000},
+      {id:7,cat:'연금IRP',name:'IRP계좌',owner:'남편',amount:1800},
+      {id:8,cat:'부동산분양권',name:'아파트 분양권',owner:'공동',amount:8000},
+    ];
+    saveToStorage();
+  }
+}
+
+function renderMonth(){
+  const assets=getAssets(cy,cm);
+  const [py,pm]=prevYM(cy,cm);
+  const prev=getAssets(py,pm);
+  const total=calcTotal(assets);
+  const prevTotal=calcTotal(prev);
+  const diff=total-prevTotal;
+  const pct=prevTotal?((diff/prevTotal)*100).toFixed(1):'0.0';
+  document.getElementById('total-sub').textContent=`총 ${fmt(total)}만원 · 전월 대비 ${diff>=0?'+':''}${fmt(diff)}만원 (${diff>=0?'+':''}${pct}%)`;
+  const cats=calcCats(assets);
+  document.getElementById('summary-grid').innerHTML=ORDER.map(c=>`
+    <div class="mc">
+      <div class="lbl" style="color:${CAT_TEXT[c]}">${c}</div>
+      <div class="val">${fmt(cats[c]||0)}만원</div>
+      <div class="pct">${total?Math.round((cats[c]||0)/total*100):0}%</div>
+    </div>`).join('');
+  renderTable(assets,prev);
+  renderPie(cats,total);
+  renderTrend();
+}
+
+function renderTable(assets,prev){
+  const tbody=document.getElementById('asset-tbody');
+  let html='';
+  OWNER_ORDER.forEach(owner=>{
+    const group=assets.filter(a=>a.owner===owner);
+    if(!group.length) return;
+    const groupTotal=calcTotal(group);
+    const label=OWNER_DISPLAY[owner];
+    const bg=OWNER_BG[owner];
+    const tc=OWNER_TEXT[owner];
+    html+=`<tr class="group-hd" style="background:${bg}"><td colspan="6" style="background:${bg}"><div class="group-inner"><span class="group-name" style="color:${tc}">${label}</span><span class="group-subtotal" style="color:${tc}">${fmt(groupTotal)}만원</span></div></td></tr>`;
+    group.forEach(a=>{
+      const pv=prev.find(p=>p.id===a.id);
+      const d=pv!=null?a.amount-pv.amount:null;
+      const sign=d>0?'+':'';
+      const cls=d>0?'pos':d<0?'neg':'';
+      if(editingId===a.id){
+        html+=`<tr id="row-${a.id}">
+          <td><select class="edit-select" id="e-cat-${a.id}">${ORDER.map(c=>`<option${c===a.cat?' selected':''}>${c}</option>`).join('')}</select></td>
+          <td><input class="edit-input" id="e-name-${a.id}" value="${a.name}" /></td>
+          <td class="r"><input class="edit-input" id="e-amt-${a.id}" type="number" value="${a.amount}" style="text-align:right" /></td>
+          <td></td>
+          <td class="c"><button class="icon-btn ok" onclick="saveEdit(${a.id})" title="저장">${SVG.check}</button></td>
+          <td class="c"><button class="icon-btn" onclick="cancelEdit()" title="취소">${SVG.x}</button></td>
+        </tr>`;
+      } else {
+        html+=`<tr id="row-${a.id}">
+          <td><span class="cat-badge" style="background:${CAT_BG[a.cat]};color:${CAT_TEXT[a.cat]}">${a.cat}</span></td>
+          <td><span class="cell-name">${a.name}</span></td>
+          <td class="r" style="font-weight:500">${fmt(a.amount)}</td>
+          <td class="r"><span class="${cls}">${d!==null&&d!==0?sign+fmt(Math.abs(d)):'—'}</span></td>
+          <td class="c"><button class="icon-btn" onclick="startEdit(${a.id})" title="수정">${SVG.edit}</button></td>
+          <td class="c"><button class="icon-btn" onclick="deleteAsset(${a.id})" title="삭제">${SVG.trash}</button></td>
+        </tr>`;
+      }
+    });
+  });
+  if(showAdd){
+    html+=`<tr class="group-hd" style="background:var(--color-background-secondary)"><td colspan="6" style="background:var(--color-background-secondary)"><div class="group-inner"><span style="font-size:13px;color:var(--color-text-secondary)">새 항목</span></div></td></tr>
+    <tr>
+      <td><select id="nr-cat" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 5px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)"><option value="">분류</option>${ORDER.map(c=>`<option>${c}</option>`).join('')}</select></td>
+      <td><input id="nr-name" placeholder="항목명" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 6px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)" /></td>
+      <td class="r"><input id="nr-amt" type="number" placeholder="금액" style="font-size:12px;width:100%;text-align:right;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 6px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)" /></td>
+      <td><select id="nr-owner" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 4px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)"><option>나</option><option>남편</option><option>공동</option></select></td>
+      <td class="c"><button class="icon-btn ok" onclick="confirmAdd()" title="저장">${SVG.check}</button></td>
+      <td class="c"><button class="icon-btn" onclick="cancelAdd()" title="취소">${SVG.x}</button></td>
+    </tr>`;
+  }
+  tbody.innerHTML=html;
+}
+
+function toggleAdd(){showAdd=!showAdd;editingId=null;renderMonth()}
+function cancelAdd(){showAdd=false;renderMonth()}
+function confirmAdd(){
+  const cat=document.getElementById('nr-cat').value;
+  const name=document.getElementById('nr-name').value.trim();
+  const owner=document.getElementById('nr-owner').value;
+  const amount=parseInt(document.getElementById('nr-amt').value)||0;
+  if(!cat||!name||!amount){alert('분류, 항목명, 금액을 입력해주세요.');return;}
+  const key=mkey(cy,cm);
+  if(!monthlyData[key]) monthlyData[key]=[];
+  monthlyData[key].push({id:nextId++,cat,name,owner,amount});
+  showAdd=false;saveToStorage();renderMonth();
+}
+function startEdit(id){editingId=id;showAdd=false;renderMonth()}
+function cancelEdit(){editingId=null;renderMonth()}
+function saveEdit(id){
+  const key=mkey(cy,cm);
+  const a=monthlyData[key].find(x=>x.id===id);
+  if(!a) return;
+  const cat=document.getElementById(`e-cat-${id}`);
+  const name=document.getElementById(`e-name-${id}`);
+  const amt=document.getElementById(`e-amt-${id}`);
+  if(cat) a.cat=cat.value;
+  if(name&&name.value.trim()) a.name=name.value.trim();
+  if(amt) a.amount=parseInt(amt.value)||a.amount;
+  editingId=null;saveToStorage();renderMonth();
+}
+function deleteAsset(id){
+  const key=mkey(cy,cm);
+  monthlyData[key]=monthlyData[key].filter(a=>a.id!==id);
+  saveToStorage();renderMonth();
+}
+
+let pieInst=null,trendInst=null;
+function renderPie(cats,total){
+  const data=ORDER.map(c=>cats[c]||0);
+  const ctx=document.getElementById('pieChart').getContext('2d');
+  if(pieInst) pieInst.destroy();
+  pieInst=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:ORDER,datasets:[{data,backgroundColor:ORDER.map(c=>COLORS[c]),borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const pct=total?Math.round(c.raw/total*100):0;return ` ${fmt(c.raw)}만원 (${pct}%)`}}}}}
+  });
+  document.getElementById('legend').innerHTML=ORDER.map((c,i)=>`
+    <div class="legend-item">
+      <span><span class="legend-dot" style="background:${COLORS[c]}"></span>${c}</span>
+      <span style="font-weight:500;color:var(--color-text-primary)">${total?Math.round((data[i]||0)/total*100):0}% <span style="font-weight:400;color:var(--color-text-secondary)">${fmt(data[i])}만</span></span>
+    </div>`).join('');
+}
+function renderTrend(){
+  const sorted=Object.entries(monthlyData)
+    .filter(([k,v])=>v&&v.length>0)
+    .map(([k,v])=>{const[y,m]=k.split('-').map(Number);return{key:k,label:`${shortYear(y)}년 ${m}월`,total:calcTotal(v)};})
+    .sort((a,b)=>a.key.localeCompare(b.key));
+  const wrap=document.getElementById('trend-wrap');
+  const empty=document.getElementById('trend-empty');
+  if(sorted.length<2){wrap.style.display='none';empty.style.display='block';return;}
+  wrap.style.display='block';empty.style.display='none';
+  const pctData=sorted.map((e,i)=>{
+    if(i===0) return null;
+    const prev=sorted[i-1].total;
+    return prev?parseFloat(((e.total-prev)/prev*100).toFixed(1)):null;
+  });
+  const ctx=document.getElementById('trendChart').getContext('2d');
+  if(trendInst) trendInst.destroy();
+  trendInst=new Chart(ctx,{
+    type:'line',
+    data:{labels:sorted.map(e=>e.label),datasets:[{label:'총자산',data:sorted.map(e=>e.total),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.08)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#378ADD'}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:c=>` ${fmt(c.raw)}만원`,
+        afterLabel:c=>{const p=pctData[c.dataIndex];return p!=null?`전월 대비 ${p>=0?'+':''}${p}%`:''}
+      }}},
+      scales:{y:{ticks:{callback:v=>fmt(v)+'만'},grid:{color:'rgba(128,128,128,0.1)'}},x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}}
+    }
+  });
+}
+function changeMonth(dir){
+  cm+=dir;if(cm>11){cm=0;cy++;}if(cm<0){cm=11;cy--;}
+  document.getElementById('month-label').textContent=`${cy}년 ${cm+1}월`;
+  editingId=null;showAdd=false;renderMonth();
+}
+initData();
+document.getElementById('month-label').textContent=`${cy}년 ${cm+1}월`;
+renderMonth();
+</script>
+</body>
+</html>
