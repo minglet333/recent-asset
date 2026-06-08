@@ -80,7 +80,7 @@
     .group-inner { display: flex; align-items: baseline; gap: 10px; }
     .group-name { font-size: 13px; font-weight: 500; }
     .group-subtotal { font-size: 12px; opacity: 0.75; }
-    .icon-btn { background: none; border: none; outline: none; padding: 4px 5px; font-size: 14px; cursor: pointer; color: var(--color-text-secondary); border-radius: var(--border-radius-md); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-sans); }
+    .icon-btn { background: none; border: none; outline: none; padding: 4px 2px; font-size: 14px; cursor: pointer; color: var(--color-text-secondary); border-radius: var(--border-radius-md); display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-sans); }
     .icon-btn:hover { background: var(--color-background-secondary); }
     .icon-btn.ok { color: var(--color-text-info); }
     .edit-input { font-size: 12px; border: 0.5px solid var(--color-border-info); border-radius: var(--border-radius-md); padding: 3px 6px; background: var(--color-background-primary); color: var(--color-text-primary); width: 100%; font-family: var(--font-sans); }
@@ -248,7 +248,7 @@ function renderTable(assets,prev){
           <td><select class="edit-select" id="e-cat-${a.id}">${ORDER.map(c=>`<option${c===a.cat?' selected':''}>${c}</option>`).join('')}</select></td>
           <td><input class="edit-input" id="e-name-${a.id}" value="${a.name}" /></td>
           <td class="r"><input class="edit-input" id="e-amt-${a.id}" type="number" value="${a.amount}" style="text-align:right" /></td>
-          <td></td>
+          <td class="r"><select class="edit-select" id="e-owner-${a.id}" style="font-size:11px"><option value="나"${a.owner==='나'?' selected':''}>누미</option><option value="남편"${a.owner==='남편'?' selected':''}>두미</option><option value="공동"${a.owner==='공동'?' selected':''}>공동</option></select></td>
           <td class="c"><button class="icon-btn ok" onclick="saveEdit(${a.id})" title="저장">${SVG.check}</button></td>
           <td class="c"><button class="icon-btn" onclick="cancelEdit()" title="취소">${SVG.x}</button></td>
         </tr>`;
@@ -270,7 +270,7 @@ function renderTable(assets,prev){
       <td><select id="nr-cat" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 5px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)"><option value="">분류</option>${ORDER.map(c=>`<option>${c}</option>`).join('')}</select></td>
       <td><input id="nr-name" placeholder="항목명" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 6px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)" /></td>
       <td class="r"><input id="nr-amt" type="number" placeholder="금액" style="font-size:12px;width:100%;text-align:right;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 6px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)" /></td>
-      <td><select id="nr-owner" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 4px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)"><option>나</option><option>남편</option><option>공동</option></select></td>
+      <td><select id="nr-owner" style="font-size:12px;width:100%;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:4px 4px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans)"><option value="나">누미</option><option value="남편">두미</option><option value="공동">공동</option></select></td>
       <td class="c"><button class="icon-btn ok" onclick="confirmAdd()" title="저장">${SVG.check}</button></td>
       <td class="c"><button class="icon-btn" onclick="cancelAdd()" title="취소">${SVG.x}</button></td>
     </tr>`;
@@ -300,9 +300,11 @@ function saveEdit(id){
   const cat=document.getElementById(`e-cat-${id}`);
   const name=document.getElementById(`e-name-${id}`);
   const amt=document.getElementById(`e-amt-${id}`);
+  const owner=document.getElementById(`e-owner-${id}`);
   if(cat) a.cat=cat.value;
   if(name&&name.value.trim()) a.name=name.value.trim();
   if(amt) a.amount=parseInt(amt.value)||a.amount;
+  if(owner) a.owner=owner.value;
   editingId=null;saveToStorage();renderMonth();
 }
 function deleteAsset(id){
