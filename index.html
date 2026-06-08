@@ -153,6 +153,7 @@ function calcTotal(a){return a.reduce(function(s,x){return s+x.amount},0)}
 function calcCats(a){var c={};a.forEach(function(x){c[x.cat]=(c[x.cat]||0)+x.amount});return c}
 function fmt(n){return Number(n||0).toLocaleString()}
 function fmtW(n){return Number(n||0).toLocaleString()+'원'}
+function fmtEok(n){return (Math.round((n||0)/1000000)/100).toFixed(2)+'억원'}
 function shortYear(y){return String(y).slice(-2)}
 function saveToStorage(){
   lastUpdated=new Date();
@@ -303,12 +304,12 @@ function renderLiquidity(assets,total){
   g.innerHTML=
     '<div class="mc" style="border-left:3px solid #1D9E75">'
     +'<div class="lbl" style="color:#085041">고환금성</div>'
-    +'<div class="val">'+fmtW(high)+'</div>'
+    +'<div class="val">'+fmtEok(high)+'</div>'
     +'<div class="pct">'+(total?Math.round(high/total*100):0)+'%</div>'
     +'</div>'
     +'<div class="mc" style="border-left:3px solid #7F77DD">'
     +'<div class="lbl" style="color:#3C3489">저환금성</div>'
-    +'<div class="val">'+fmtW(low)+'</div>'
+    +'<div class="val">'+fmtEok(low)+'</div>'
     +'<div class="pct">'+(total?Math.round(low/total*100):0)+'%</div>'
     +'</div>';
 }
